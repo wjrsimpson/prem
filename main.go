@@ -33,13 +33,15 @@ type teamBucket struct {
 }
 
 type fixture struct {
-	Id          int
-	HomeTeamId  int       `json:"team_h"`
-	AwayTeamId  int       `json:"team_a"`
-	KickOffTime time.Time `json:"kickoff_time"`
-	Finished    bool
-	HomeScore   int `json:"team_h_score"`
-	AwayScore   int `json:"team_a_score"`
+	Id             int
+	HomeTeamId     int       `json:"team_h"`
+	AwayTeamId     int       `json:"team_a"`
+	KickOffTime    time.Time `json:"kickoff_time"`
+	Finished       bool
+	HomeScore      int `json:"team_h_score"`
+	AwayScore      int `json:"team_a_score"`
+	HomeDifficulty int `json:"team_h_difficulty"`
+	AwayDifficulty int `json:"team_a_difficulty"`
 }
 
 func main() {
@@ -229,10 +231,19 @@ func printTeams(teams map[int]*teamBucket) {
 		return teamBucketList[a].points > teamBucketList[b].points
 	})
 	for _, teamBucket := range teamBucketList {
-		fmt.Println(teamBucket.team.Name, teamBucket.points)
+		fmt.Println()
+		fmt.Println(teamBucket.team.Name, ":")
+		var totalDifficulty int
 		for _, fixture := range teamBucket.fixtures {
-			fmt.Println(teams[fixture.HomeTeamId].team.Name, "v", teams[fixture.AwayTeamId].team.Name, fixture.KickOffTime)
+			if teamBucket.team.Id == fixture.HomeTeamId {
+				totalDifficulty += fixture.HomeDifficulty
+				fmt.Println("H ", teams[fixture.AwayTeamId].team.Name, fixture.HomeDifficulty, fixture.KickOffTime)
+			} else {
+				totalDifficulty += fixture.AwayDifficulty
+				fmt.Println("A ", teams[fixture.HomeTeamId].team.Name, fixture.AwayDifficulty, fixture.KickOffTime)
+			}
 		}
+		fmt.Println("Total difficulty:", totalDifficulty)
 	}
 }
 
