@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"flag"
 	"fmt"
 	"io"
 	"net/http"
@@ -16,6 +17,8 @@ const (
 	bootstrapUrl = baseUrl + "/bootstrap-static"
 	fixturesUrl  = baseUrl + "/fixtures"
 )
+
+var refreshCache bool
 
 type bootstrapData struct {
 	Teams []team
@@ -45,10 +48,17 @@ type fixture struct {
 }
 
 func main() {
+	parseArgs()
 	teams := getTeamMap()
 	fixturesList := getFixturesList()
 	processFixtures(fixturesList, teams)
 	printTeams(teams)
+}
+
+func parseArgs() {
+	refreshCachePtr := flag.Bool("r", false, "refresh the cache")
+	flag.Parse()
+	refreshCache = *refreshCachePtr
 }
 
 func getTeamMap() map[int]*teamBucket {
@@ -72,7 +82,9 @@ func getBootstrapFilePath() string {
 }
 
 func populateBootstrapCacheFile(bootstrapFilePath string) {
-	if _, err := os.Stat(bootstrapFilePath); os.IsNotExist(err) {
+	_, err := os.Stat(bootstrapFilePath)
+	fileNotExists := os.IsNotExist(err)
+	if fileNotExists || refreshCache {
 		bootstrapFile := createBootstrapFile(bootstrapFilePath)
 		res := getBootstrapData()
 		copyBootstrapDataToFile(bootstrapFile, res)
@@ -160,7 +172,9 @@ func readFixturesData(filePath string) []fixture {
 }
 
 func populateFixturesCacheFile(fixturesFilePath string) {
-	if _, err := os.Stat(fixturesFilePath); os.IsNotExist(err) {
+	_, err := os.Stat(fixturesFilePath)
+	fileNotExists := os.IsNotExist(err)
+	if fileNotExists || refreshCache {
 		fixturesFile := createFixturesFile(fixturesFilePath)
 		res := getFixturesData()
 		copyFixturesDataToFile(fixturesFile, res)
