@@ -224,7 +224,7 @@ func processFixtures(fixturesData []fixture, teams map[int]*teamBucket) {
 				homeTeamBucket.points += 1
 				awayTeamBucket.points += 1
 			}
-		} else {
+		} else if fixture.KickOffTime.Year() > 1 {
 			if len(homeTeamBucket.fixtures) < 5 {
 				homeTeamBucket.fixtures = append(homeTeamBucket.fixtures, fixture)
 			}
