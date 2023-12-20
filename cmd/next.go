@@ -1,8 +1,10 @@
-package main
+/*
+Copyright © 2023 NAME HERE <EMAIL ADDRESS>
+*/
+package cmd
 
 import (
 	"encoding/json"
-	"flag"
 	"fmt"
 	"io"
 	"net/http"
@@ -10,6 +12,8 @@ import (
 	"path/filepath"
 	"sort"
 	"time"
+
+	"github.com/spf13/cobra"
 )
 
 const (
@@ -18,7 +22,7 @@ const (
 	fixturesUrl  = baseUrl + "/fixtures"
 )
 
-var refreshCache bool
+var refreshCache *bool
 
 type bootstrapData struct {
 	Teams []team
@@ -47,18 +51,34 @@ type fixture struct {
 	AwayDifficulty int `json:"team_a_difficulty"`
 }
 
-func main() {
-	parseArgs()
-	teams := getTeamMap()
-	fixturesList := getFixturesList()
-	processFixtures(fixturesList, teams)
-	printTeams(teams)
+// nextCmd represents the next command
+var nextCmd = &cobra.Command{
+	Use:   "next",
+	Short: "Prints out the next 5 fixtures for each team",
+	Long: `Prints out the next 5 fixtures for each team, along with the difficulty of each fixture.
+	
+The fixtures will be retrieved from the FPL API and cached in the user's cache directory. You can force a refresh of the cache by using the -r flag.
+	`,
+	Run: func(cmd *cobra.Command, args []string) {
+		teams := getTeamMap()
+		fixturesList := getFixturesList()
+		processFixtures(fixturesList, teams)
+		printTeams(teams)
+	},
 }
 
-func parseArgs() {
-	refreshCachePtr := flag.Bool("r", false, "refresh the cache")
-	flag.Parse()
-	refreshCache = *refreshCachePtr
+func init() {
+	rootCmd.AddCommand(nextCmd)
+
+	// Here you will define your flags and configuration settings.
+
+	// Cobra supports Persistent Flags which will work for this command
+	// and all subcommands, e.g.:
+	// nextCmd.PersistentFlags().String("foo", "", "A help for foo")
+
+	// Cobra supports local flags which will only run when this command
+	// is called directly, e.g.:
+	refreshCache = nextCmd.Flags().BoolP("refresh", "r", false, "refresh the cache")
 }
 
 func getTeamMap() map[int]*teamBucket {
@@ -84,7 +104,7 @@ func getBootstrapFilePath() string {
 func populateBootstrapCacheFile(bootstrapFilePath string) {
 	_, err := os.Stat(bootstrapFilePath)
 	fileNotExists := os.IsNotExist(err)
-	if fileNotExists || refreshCache {
+	if fileNotExists || *refreshCache {
 		bootstrapFile := createBootstrapFile(bootstrapFilePath)
 		res := getBootstrapData()
 		copyBootstrapDataToFile(bootstrapFile, res)
@@ -174,7 +194,7 @@ func readFixturesData(filePath string) []fixture {
 func populateFixturesCacheFile(fixturesFilePath string) {
 	_, err := os.Stat(fixturesFilePath)
 	fileNotExists := os.IsNotExist(err)
-	if fileNotExists || refreshCache {
+	if fileNotExists || *refreshCache {
 		fixturesFile := createFixturesFile(fixturesFilePath)
 		res := getFixturesData()
 		copyFixturesDataToFile(fixturesFile, res)
