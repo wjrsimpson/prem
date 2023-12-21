@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"slices"
 	"sort"
 	"time"
 )
@@ -36,6 +37,7 @@ type teamBucket struct {
 
 type fixture struct {
 	Id             int
+	Event          int
 	HomeTeamId     int       `json:"team_h"`
 	AwayTeamId     int       `json:"team_a"`
 	KickOffTime    time.Time `json:"kickoff_time"`
@@ -44,6 +46,76 @@ type fixture struct {
 	AwayScore      int `json:"team_a_score"`
 	HomeDifficulty int `json:"team_h_difficulty"`
 	AwayDifficulty int `json:"team_a_difficulty"`
+}
+
+func PrintBlanks() {
+	teams := getTeamMap()
+	fixturesList := getFixturesList()
+	gameweekMap := getGameweekMap(fixturesList)
+	blanksMap := getBlanks(gameweekMap, teams)
+
+	keys := getKeysFromMap(blanksMap)
+	slices.Sort(keys)
+	for _, gameweek := range keys {
+		teamBuckets := blanksMap[gameweek]
+		fmt.Println("Gameweek:", gameweek)
+		for _, teamBucket := range teamBuckets {
+			fmt.Println(teamBucket.team.Name)
+		}
+		fmt.Println()
+	}
+}
+
+func getBlanks(gameweekMap map[int][]fixture, teams map[int]*teamBucket) map[int][]*teamBucket {
+	blanksMap := make(map[int][]*teamBucket)
+	// Loop through gameweeks and find blanks
+	for gameweek, fixtures := range gameweekMap {
+		// Get the team ids from the teams map
+		if len(fixtures) < 10 {
+			keys := getKeysFromMap(teams)
+			for _, fixture := range fixtures {
+				keys = remove(keys, fixture.HomeTeamId)
+				keys = remove(keys, fixture.AwayTeamId)
+			}
+			for _, key := range keys {
+				blanksMap[gameweek] = append(blanksMap[gameweek], teams[key])
+			}
+		}
+	}
+	return blanksMap
+}
+
+func getKeysFromMap[K comparable, V any](m map[K]V) []K {
+	keys := make([]K, 0, len(m))
+	for key := range m {
+		keys = append(keys, key)
+	}
+	return keys
+}
+
+func remove(slice []int, item int) []int {
+	index := -1
+	for i, value := range slice {
+		if value == item {
+			index = i
+			break
+		}
+	}
+	if index == -1 {
+		return slice
+	}
+	return append(slice[:index], slice[index+1:]...)
+}
+
+func getGameweekMap(fixturesList []fixture) map[int][]fixture {
+	// Loop through fixtures and create a map of gameweek to fixtures
+	gameweekMap := make(map[int][]fixture)
+	for _, fixture := range fixturesList {
+		if fixture.Event != 0 {
+			gameweekMap[fixture.Event] = append(gameweekMap[fixture.Event], fixture)
+		}
+	}
+	return gameweekMap
 }
 
 func PrintNextFixtures() {
