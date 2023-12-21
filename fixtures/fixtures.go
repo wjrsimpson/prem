@@ -71,15 +71,13 @@ func getBlanks(gameweekMap map[int][]fixture, teams map[int]*teamBucket) map[int
 	// Loop through gameweeks and find blanks
 	for gameweek, fixtures := range gameweekMap {
 		// Get the team ids from the teams map
-		if len(fixtures) < 10 {
-			keys := getKeysFromMap(teams)
-			for _, fixture := range fixtures {
-				keys = remove(keys, fixture.HomeTeamId)
-				keys = remove(keys, fixture.AwayTeamId)
-			}
-			for _, key := range keys {
-				blanksMap[gameweek] = append(blanksMap[gameweek], teams[key])
-			}
+		keys := getKeysFromMap(teams)
+		for _, fixture := range fixtures {
+			keys = remove(keys, fixture.HomeTeamId)
+			keys = remove(keys, fixture.AwayTeamId)
+		}
+		for _, key := range keys {
+			blanksMap[gameweek] = append(blanksMap[gameweek], teams[key])
 		}
 	}
 	return blanksMap
