@@ -1,6 +1,7 @@
 package fixtures
 
 import (
+	"cmp"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -54,9 +55,7 @@ func PrintBlanks() {
 	gameweekMap := getGameweekMap(fixturesList)
 	blanksMap := getBlanks(gameweekMap, teams)
 
-	keys := getKeysFromMap(blanksMap)
-	slices.Sort(keys)
-	for _, gameweek := range keys {
+	for _, gameweek := range getSortedKeysFromMap(blanksMap) {
 		teamBuckets := blanksMap[gameweek]
 		fmt.Println("Gameweek:", gameweek)
 		for _, teamBucket := range teamBuckets {
@@ -71,7 +70,7 @@ func getBlanks(gameweekMap map[int][]fixture, teams map[int]*teamBucket) map[int
 	// Loop through gameweeks and find blanks
 	for gameweek, fixtures := range gameweekMap {
 		// Get the team ids from the teams map
-		keys := getKeysFromMap(teams)
+		keys := getSortedKeysFromMap(teams)
 		for _, fixture := range fixtures {
 			keys = remove(keys, fixture.HomeTeamId)
 			keys = remove(keys, fixture.AwayTeamId)
@@ -83,11 +82,12 @@ func getBlanks(gameweekMap map[int][]fixture, teams map[int]*teamBucket) map[int
 	return blanksMap
 }
 
-func getKeysFromMap[K comparable, V any](m map[K]V) []K {
+func getSortedKeysFromMap[K cmp.Ordered, V any](m map[K]V) []K {
 	keys := make([]K, 0, len(m))
 	for key := range m {
 		keys = append(keys, key)
 	}
+	slices.Sort(keys)
 	return keys
 }
 
