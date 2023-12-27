@@ -82,6 +82,51 @@ func getBlanks(gameweekMap map[int][]fixture, teams map[int]*teamBucket) map[int
 	return blanksMap
 }
 
+func PrintDoubles() {
+	teams := getTeamMap()
+	fixturesList := getFixturesList()
+	gameweekMap := getGameweekMap(fixturesList)
+	doublesMap := getDoubles(gameweekMap)
+
+	for _, gameweek := range getSortedKeysFromMap(doublesMap) {
+		fixtures := doublesMap[gameweek]
+		fmt.Println("Gameweek:", gameweek)
+		for _, fixture := range fixtures {
+			fmt.Println(teams[fixture.HomeTeamId].team.Name, "v", teams[fixture.AwayTeamId].team.Name)
+		}
+		fmt.Println()
+	}
+}
+
+func getDoubles(gameweekMap map[int][]fixture) map[int][]fixture {
+	doublesMap := make(map[int][]fixture)
+	// Loop through gameweeks and find doubles
+	for gameweek, fixtures := range gameweekMap {
+		for _, fixture := range fixtures {
+			if isDouble(fixture, fixtures) {
+				doublesMap[gameweek] = append(doublesMap[gameweek], fixture)
+			}
+		}
+	}
+	return doublesMap
+}
+
+func isDouble(fixture fixture, fixtures []fixture) bool {
+	count := 0
+	for _, f := range fixtures {
+		if f.Id == fixture.Id {
+			continue
+		}
+		if f.HomeTeamId == fixture.HomeTeamId || f.AwayTeamId == fixture.HomeTeamId {
+			count++
+		}
+		if f.HomeTeamId == fixture.AwayTeamId || f.AwayTeamId == fixture.AwayTeamId {
+			count++
+		}
+	}
+	return count > 1
+}
+
 func getSortedKeysFromMap[K cmp.Ordered, V any](m map[K]V) []K {
 	keys := make([]K, 0, len(m))
 	for key := range m {
