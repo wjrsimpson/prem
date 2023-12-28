@@ -19,7 +19,7 @@ const (
 	fixturesUrl  = baseUrl + "/fixtures"
 )
 
-var RefreshCache *bool
+var RefreshCache bool
 
 type bootstrapData struct {
 	Teams []team
@@ -191,7 +191,7 @@ func getBootstrapFilePath() string {
 func populateBootstrapCacheFile(bootstrapFilePath string) {
 	_, err := os.Stat(bootstrapFilePath)
 	fileNotExists := os.IsNotExist(err)
-	if fileNotExists || *RefreshCache {
+	if fileNotExists || RefreshCache {
 		bootstrapFile := createBootstrapFile(bootstrapFilePath)
 		res := getBootstrapData()
 		copyBootstrapDataToFile(bootstrapFile, res)
@@ -281,7 +281,7 @@ func readFixturesData(filePath string) []fixture {
 func populateFixturesCacheFile(fixturesFilePath string) {
 	_, err := os.Stat(fixturesFilePath)
 	fileNotExists := os.IsNotExist(err)
-	if fileNotExists || *RefreshCache {
+	if fileNotExists || RefreshCache {
 		fixturesFile := createFixturesFile(fixturesFilePath)
 		res := getFixturesData()
 		copyFixturesDataToFile(fixturesFile, res)

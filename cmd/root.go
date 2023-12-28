@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
+	"github.com/wjrsimpson/prem/fixtures"
 )
 
 // rootCmd represents the base command when called without any subcommands
@@ -39,8 +40,7 @@ func init() {
 	// Cobra supports persistent flags, which, if defined here,
 	// will be global for your application.
 
-	// rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.prem.yaml)")
-
+	rootCmd.PersistentFlags().BoolVarP(&fixtures.RefreshCache, "refresh", "r", false, "refresh the cache")
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
