@@ -124,7 +124,7 @@ func isDouble(fixture fixture, fixtures []fixture) bool {
 			count++
 		}
 	}
-	return count > 1
+	return count > 0
 }
 
 func getSortedKeysFromMap[K cmp.Ordered, V any](m map[K]V) []K {
